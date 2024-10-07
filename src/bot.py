@@ -31,8 +31,8 @@ async def on_ready():
 
     # Schedule the job to run every Tuesday at 12:00 PM
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(post_tue_gifs, 'cron', day_of_week='tue', hour=8, minute=0)
-    scheduler.add_job(post_wed_gifs, 'cron', day_of_week='wed', hour=8, minute=0)
+    scheduler.add_job(post_tue_gifs, 'cron', day_of_week='tue', hour=10, minute=0)
+    scheduler.add_job(post_wed_gifs, 'cron', day_of_week='wed', hour=10, minute=0)
     scheduler.start()
 
 @bot.event
@@ -89,4 +89,7 @@ async def post_test(ctx):
         channel.send("This is a test!")
 
 
-bot.run(TOKEN)
+# Lambda handler function
+def lambda_handler(event, context):
+    token = os.environ['DISCORD_TOKEN']
+    bot.run(TOKEN)
