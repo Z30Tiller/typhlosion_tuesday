@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -36,16 +35,58 @@ async def on_ready():
     scheduler.add_job(post_wed_gifs, 'cron', day_of_week='wed', hour=8, minute=0)
     scheduler.start()
 
+@bot.event
+async def on_guild_join(guild):
+    # This event is triggered when the bot joins a new server
+    print(f"Bot added to server: {guild.name} (ID: {guild.id})")
+
+    # You can choose a default channel to send a message to or configure further
+    # Generally, try to find the 'general' text channel or the first channel
+    for channel in guild.text.channels:
+        if "general" in channel.name:
+            await channel.send("Hello! Thanks for adding me to your server!")
+            break
+        else:
+            # Fallback to the first available text channel
+            first_channel = guild.text_channels[0]
+            await first_channel.send("Hello! Thanks for adding me to your server!")
+
+@bot.command
+async def set_channel(ctx, channel: discord.TextChannel):
+    # Save the channel ID for future use
+    with open("channel_config.txt", "w") as f:
+        f.write(str(channel.id))
+    await ctx.send(f"Channel set to: {channel.name}")
+
 async def post_tue_gifs():
-    channel = bot.get_channel(CHANNEL_ID)
+    # Read the saved channel ID
+    with open("channel_config.txt", "r") as f:
+        channel_id = int(f.read())
+
+    channel = bot.get_channel(channel_id)
     if channel:
         for gif in tuesdayGifs:
             await channel.send(gif)
 
 async def post_wed_gifs():
-    channel = bot.get_channel(CHANNEL_ID)
+    # Read the saved channel ID
+    with open("channel_config.txt", "r") as f:
+        channel_id = int(f.read())
+
+    channel = bot.get_channel(channel_id)
     if channel:
         for gif in wednesdayGifs:
             await channel.send(gif)
+
+@bot.command
+async def post_test(ctx):
+    # Read the saved channel ID
+    with open("channel_config.txt", "r") as f:
+        channel_id = int(f.read())
+
+    channel = bot.get_channel(channel_id)
+    if channel:
+        channel.send("This is a test!")
+
 
 bot.run(TOKEN)
